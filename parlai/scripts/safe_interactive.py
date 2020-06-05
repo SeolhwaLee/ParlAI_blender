@@ -40,6 +40,46 @@ def setup_args(parser=None):
         default=True,
         help='Create interactive version of task',
     )
+    parser.add_argument(
+        '-sc',
+        '--script-chateval',
+        type='bool',
+        default=False,
+        dest='chat_script',
+        help='Chateval script read file'
+             'True: chateval evaluation, False: single-turn conversation with agent(original model)',
+    )
+    parser.add_argument(
+        '-scip',
+        '--chateval-input-path',
+        type=str,
+        default=None,
+        dest='script_input_path',
+        help='Chateval script input path',
+    )
+    parser.add_argument(
+        '-scop',
+        '--chateval-output-path',
+        type=str,
+        default=None,
+        dest='script_output_path',
+        help='Chateval result output path',
+    )
+    parser.add_argument(
+        '--chateval-multi-num',
+        type=int,
+        default=0,
+        dest='chateval_multi_num',
+        help='True is chateval multiturn setting, turn coverage count.',
+    )
+    parser.add_argument(
+        '--chateval-multi',
+        type='bool',
+        default=False,
+        hidden=True,
+        dest='chateval_multi',
+        help='True is chateval multiturn setting, False just single turn.',
+    )
     parser.set_defaults(interactive_mode=True, task='interactive')
     SafeLocalHumanAgent.add_cmdline_args(parser)
     return parser
@@ -64,19 +104,36 @@ def safe_interactive(opt, print_parser=None):
     human_agent = SafeLocalHumanAgent(opt)
     world = create_task(opt, [human_agent, agent])
 
-    # Interact until episode done
-    while True:
-        world.parley()
-        bot_act = world.get_acts()[-1]
-        if 'bot_offensive' in bot_act and bot_act['bot_offensive']:
-            agent.reset()
+    if not opt.get('chat_script'):
+        '''for chateval script evaluation'''
+        # Interact until episode done
+        while True:
+            world.parley()
+            bot_act = world.get_acts()[-1]
+            if 'bot_offensive' in bot_act and bot_act['bot_offensive']:
+                agent.reset()
 
-        if opt.get('display_examples'):
-            print('---')
-            print(world.display())
-        if world.epoch_done():
-            print('EPOCH DONE')
-            break
+            if opt.get('display_examples'):
+                print('---')
+                print(world.display())
+            if world.epoch_done():
+                print('EPOCH DONE')
+                break
+    else:
+        while True:
+            # world.parley_script(opt.get('script_input_path'), opt.get('script_output_path'), opt.get('model-file'))
+            world.parley_script(opt.get('script_input_path'), opt.get('script_output_path'), opt.get('model_file'),
+                                opt.get('chateval_multi'),opt.get('chateval_multi_num'))
+            bot_act = world.get_acts()[-1]
+            if 'bot_offensive' in bot_act and bot_act['bot_offensive']:
+                agent.reset()
+
+            if opt.get('display_examples'):
+                print("---")
+                print(world.display())
+            if world.epoch_done():
+                print("EPOCH DONE")
+                break
 
 
 if __name__ == '__main__':

@@ -41,7 +41,30 @@ def setup_args(parser=None):
         action='store_true',
         help='If false, simple converational view, does not show other message fields.',
     )
-
+    parser.add_argument(
+        '--chateval-multi',
+        type='bool',
+        default=False,
+        hidden=True,
+        dest='chateval_multi',
+        help='True is chateval multiturn setting, False just single turn.',
+    )
+    parser.add_argument(
+        '-scip',
+        '--chateval-input-path',
+        type=str,
+        default=None,
+        dest='script_input_path',
+        help='Chateval script input path',
+    )
+    parser.add_argument(
+        '-scop',
+        '--chateval-output-path',
+        type=str,
+        default=None,
+        dest='script_output_path',
+        help='Chateval result output path',
+    )
     parser.set_defaults(datatype='train:ordered')
     return parser
 
