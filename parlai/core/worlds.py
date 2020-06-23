@@ -473,7 +473,9 @@ class DialogPartnerWorld(World):
                     turn_temp = []
 
             else:
-                acts[0] = {'id': 'localHuman', 'episode_done': True, 'label_candidates': None, 'text': str(raw_text)}
+                # acts[0] = {'id': 'localHuman', 'episode_done': True, 'label_candidates': None, 'text': str(raw_text)}
+                # print(acts[0])
+                acts[0] = {'id': 'context', 'episode_done': True, 'label_candidates': None, 'text': str(raw_text)}
                 agents[1].observe(validate(acts[0]))
                 acts[1] = agents[1].act()
                 agents[0].observe(validate(acts[1]))
