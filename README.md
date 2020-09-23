@@ -1,3 +1,18 @@
+## DBDC-WOCHAT script
+
+```bash
+git clone https://github.com/sseol11/ParlAI_blender.git ~/ParlAI_blender
+cd ~/ParlAI_blender; python setup.py develop
+```
+for running script
+```bash
+python parlai/scripts/safe_interactive_dbdc.py -t blended_skill_talk \\ 
+-mf zoo:blender/blender_90M/model --include-personas False \\ 
+-sc True -scip [path/to/input/script/file] \\
+-scop [path/to/save/output/file]  --chateval-multi True \\
+--dbdc True --single-turn False
+```
+
 <p align="center"><img width="70%" src="docs/source/\_static/img/parlai.png" /></p>
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/facebookresearch/ParlAI/blob/master/LICENSE) [![CircleCI](https://circleci.com/gh/facebookresearch/ParlAI.svg?style=shield)](https://circleci.com/gh/facebookresearch/ParlAI/tree/master) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/facebookresearch/ParlAI/blob/master/CONTRIBUTING.md) [![Twitter](https://img.shields.io/twitter/follow/parlai_parley?label=Twitter&style=social)](https://twitter.com/parlai_parley)
