@@ -396,7 +396,7 @@ class DialogPartnerWorld(World):
                     for index, turn_each in enumerate(turn_temp):
                         if index == 1:
                             # second turn
-                            acts[0] = {'id': 'localHuman', 'episode_done': False, 'label_candidates': None,
+                            acts[0] = {'id': 'safeLocalHuman', 'episode_done': False, 'label_candidates': None,
                                        'text': str(turn_each)}
                             agents[1].observe(validate(acts[0]))
                             acts[1] = agents[1].act()
@@ -405,9 +405,12 @@ class DialogPartnerWorld(World):
                             result = acts[1]['text']
                             script_response.write("%s\n" % (result))
                             self.update_counters()
+                            self.finalize_episode()
+                            self.turn_cnt = 0
+
 
                         # first turn
-                        acts[0] = {'id': 'localHuman', 'episode_done': True, 'label_candidates': None,
+                        acts[0] = {'id': 'safeLocalHuman', 'episode_done': True, 'label_candidates': None,
                                    'text': str(turn_each)}
                         agents[1].observe(validate(acts[0]))
                         acts[1] = agents[1].act()
@@ -416,6 +419,7 @@ class DialogPartnerWorld(World):
                         result = acts[1]['text']
                         # script_response.write("%s\n" % (result))
                         self.update_counters()
+                        self.turn_cnt += 1
 
                     turn_temp = []
 
@@ -437,7 +441,7 @@ class DialogPartnerWorld(World):
                     for index, turn_each in enumerate(turn_temp):
                         if index == 1:
                             # second turn
-                            acts[0] = {'id': 'localHuman', 'episode_done': False, 'label_candidates': None,
+                            acts[0] = {'id': 'safeLocalHuman', 'episode_done': False, 'label_candidates': None,
                                        'text': str(turn_each)}
                             agents[1].observe(validate(acts[0]))
                             acts[1] = agents[1].act()
@@ -446,10 +450,11 @@ class DialogPartnerWorld(World):
                             result = acts[1]['text']
                             # script_response.write("%s\n" % (result))
                             self.update_counters()
+                            self.turn_cnt += 1
 
                         if index == 2:
                             # third turn
-                            acts[0] = {'id': 'localHuman', 'episode_done': False, 'label_candidates': None,
+                            acts[0] = {'id': 'safeLocalHuman', 'episode_done': False, 'label_candidates': None,
                                        'text': str(turn_each)}
                             agents[1].observe(validate(acts[0]))
                             acts[1] = agents[1].act()
@@ -458,9 +463,11 @@ class DialogPartnerWorld(World):
                             result = acts[1]['text']
                             script_response.write("%s\n" % (result))
                             self.update_counters()
+                            self.finalize_episode()
+                            self.turn_cnt = 0
 
                         # first turn
-                        acts[0] = {'id': 'localHuman', 'episode_done': True, 'label_candidates': None,
+                        acts[0] = {'id': 'safeLocalHuman', 'episode_done': True, 'label_candidates': None,
                                    'text': str(turn_each)}
                         agents[1].observe(validate(acts[0]))
                         acts[1] = agents[1].act()
@@ -469,8 +476,99 @@ class DialogPartnerWorld(World):
                         # result = acts[1]['text']
                         # script_response.write("%s\n" % (result))
                         self.update_counters()
+                        self.turn_cnt += 1
 
                     turn_temp = []
+
+            else:
+                # acts[0] = {'id': 'localHuman', 'episode_done': True, 'label_candidates': None, 'text': str(raw_text)}
+                # print(acts[0])
+                acts[0] = {'id': 'context', 'episode_done': True, 'label_candidates': None, 'text': str(raw_text)}
+                agents[1].observe(validate(acts[0]))
+                acts[1] = agents[1].act()
+                agents[0].observe(validate(acts[1]))
+
+                result = acts[1]['text']
+                script_response.write("%s\n" % (result))
+                self.update_counters()
+
+        script_response.close()
+        print("script response complete!")
+        # acts[0] = {'id': 'localHuman', 'episode_done': False, 'label_candidates': None, 'text': '[DONE]'}
+        # agents[1].observe(validate(acts[0]))
+        import sys
+        sys.exit()
+
+    def parley_dbdc_script(self, input_path, output_path, model_name, multi_check):
+        """
+        Agent 0 goes first.
+
+        Alternate between the two agents.
+        chateval script read and eval
+        input_path: data input path
+        output_path: evaluation result (agent response) file path
+        model_name: model name
+        """
+        script_input_path = str(input_path)
+        script_file = open(script_input_path, 'r', encoding='utf-8')
+
+        script_out_path = str(output_path)
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+        file_name = script_input_path.split('/')[-1].split('.')[0]
+
+        if model_name.find(":") != -1:
+            model_name = model_name.split(':')[-1]
+        else:
+            model_name = model_name.split('/')[-1]
+
+        if model_name.find('blender') != -1:
+            script_response = open(script_out_path + '/' + file_name + '_' + model_name.split('/')[-2] + '_' + timestr +
+                                   '.txt', 'w')
+        else:
+            script_response = open(script_out_path + '/' + file_name + '_' + model_name + '_' + timestr +
+                                   '.txt', 'w')
+
+        acts = self.acts
+        agents = self.agents
+        # acts[0] = agents[0].act()
+        count = 0
+        for raw_text in script_file:
+            count += 1
+            # acts[0] = {'id': 'localHuman', 'episode_done': False, 'label_candidates': None, 'text': 'hi'}
+            # if count > 850:
+            # raw_text = raw_text.replace('\n', '')
+            print(raw_text)
+            if multi_check == True:
+
+                if len(raw_text) > 1:
+                    first_turn = raw_text.split()[0]
+                    utter = raw_text.split()[1:]
+                    input_utter = ' '.join(utter)
+
+                    if int(first_turn) == 1:
+                        acts[0] = {'id': 'localHuman', 'episode_done': True, 'label_candidates': None,
+                                   'text': str(input_utter)}
+                    else:
+                        acts[0] = {'id': 'localHuman', 'episode_done': False, 'label_candidates': None,
+                                   'text': str(input_utter)}
+
+                    agents[1].observe(validate(acts[0]))
+                    acts[1] = agents[1].act()
+                    agents[0].observe(validate(acts[1]))
+
+                    result = acts[1]['text']
+                    script_response.write("%s" % (raw_text))
+                    self.update_counters()
+                    continue
+                elif len(raw_text) < 1:
+                    print("---End of Dialogue---")
+                    result = acts[1]['text']
+                    print("result:", result)
+                    script_response.write("[ground]\t%s\n" % (result))
+
+
+
+
 
             else:
                 # acts[0] = {'id': 'localHuman', 'episode_done': True, 'label_candidates': None, 'text': str(raw_text)}
