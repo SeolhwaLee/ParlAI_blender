@@ -7,7 +7,7 @@ cd ~/ParlAI_blender; python setup.py develop
 for running script
 ```bash
 python parlai/scripts/safe_interactive_dbdc.py -t blended_skill_talk \\ 
--mf zoo:blender/blender_90M/model --include-personas False \\ 
+-mf zoo:blender/blender_3B/model --include-personas False \\ 
 -sc True -scip [path/to/input/script/file] \\
 -scop [path/to/save/output/file]  --chateval-multi True \\
 --dbdc True --single-turn False
